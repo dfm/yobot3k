@@ -30,6 +30,7 @@ class Application(tornado.web.Application):
             (r"/", IndexHandler),
             (r"/{0}".format(os.environ.get("YO_API_PATH", "")), YoHandler),
             (r"/fact", FactHandler),
+            (r"/fact/([0-9]+)", FactHandler),
             (r"/fact.txt", FactTxtHandler),
         ]
         settings = dict(
@@ -65,8 +66,13 @@ class YoHandler(tornado.web.RequestHandler):
 
 class FactHandler(tornado.web.RequestHandler):
 
-    def get(self):
-        self.render("fact.html", fact=facts[random.randint(0, len(facts))])
+    def get(self, factid=None):
+        if factid is None or not (0 <= int(factid) < len(facts)):
+            factid = random.randint(0, len(facts)-1)
+            self.redirect("/fact/{0}".format(factid))
+            return
+        factid = int(factid)
+        self.render("fact.html", fact=facts[factid])
 
 
 class FactTxtHandler(tornado.web.RequestHandler):
